@@ -1,0 +1,4 @@
+- mail: example2@mail.com
+  url_hook: http://example.com/hook2
+- mail: example3@mail.com
+  url_hook: http://example.com/hook3
