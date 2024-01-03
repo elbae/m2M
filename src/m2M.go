@@ -272,14 +272,21 @@ func handleDataCommand(reader *bufio.Reader, conn net.Conn, mail *Mail, receiver
 }
 
 func getUrlHook(receivers []Receiver, to string) string {
-    // Remove angle brackets from email address
-    to = strings.Trim(to, "<>")
-    for _, receiver := range receivers {
-        if receiver.Mail == to {
-            return receiver.UrlHook
-        }
-    }
-    return ""
+	// Define a regex to match an email address
+	re := regexp.MustCompile(`[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}`)
+
+	// Extract the email address
+	matches := re.FindStringSubmatch(to)
+	if len(matches) > 0 {
+		to = matches[0]
+	}
+
+	for _, receiver := range receivers {
+		if receiver.Mail == to {
+			return receiver.UrlHook
+		}
+	}
+	return ""
 }
 
 func handleError(errorString error){
