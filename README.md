@@ -1,5 +1,5 @@
 # m2M
-Simple Mail to Slack/Mattermost notification in go
+Simple Mail to Slack/Mattermost/Teams notification in go
 
 ## Execution
 ```bash
