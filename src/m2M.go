@@ -14,6 +14,7 @@ import (
 	"time"
     "errors"
     "github.com/int128/slack"
+    "regexp"
 )
 
 type Receiver struct {
@@ -44,6 +45,9 @@ type NotificationPayload struct {
 
 var debug bool
 var notify bool
+var bind string
+var listener net.Listener
+
 const MAILDIR string = "./mails"
 const LOGSDIR string = "./logs"
 const CONFIGDIR string = "./config"
@@ -53,6 +57,7 @@ const CONFIGDIR string = "./config"
 func main() {
 	flag.BoolVar(&debug, "d", false, "enable debug output")
 	flag.BoolVar(&notify, "n", false, "enable notify output")
+	flag.StringVar(&bind, "bind", "localhost:2525", "set IP and port address to bind")
 	flag.Parse()
 
 	// creating LOGSDIR folder 
@@ -108,11 +113,12 @@ func main() {
 		fmt.Println(receiver.Mail,receiver.UrlHook)
 	}
 
-	listener, err := net.Listen("tcp", "localhost:2525")
+	fmt.Println("Binding on: " + bind)
+	listener, err = net.Listen("tcp", bind)
 	if err != nil {
-		handleError(err)
-		return
-	}
+			handleError(err)
+			return
+		}
 
 	if notify {
 		go func() {
@@ -148,7 +154,7 @@ func main() {
 						mailFile.Close()
 						if len(urlHook) > 3 {
 							if len(mail.Subject) > 3{
-								err := notifyMattermost(mail.Subject , urlHook)
+								err := notifyMattermost(mail.From + mail.Subject , urlHook)
 								if err != nil {
 									handleError(err)
 								}else{
@@ -279,6 +285,8 @@ func getUrlHook(receivers []Receiver, to string) string {
 	matches := re.FindStringSubmatch(to)
 	if len(matches) > 0 {
 		to = matches[0]
+	} else{
+		log.Println("Could not find a match for |" + to + "|")
 	}
 
 	for _, receiver := range receivers {
